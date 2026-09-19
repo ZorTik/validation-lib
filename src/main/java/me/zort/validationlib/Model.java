@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * Represents a model for config validation.
@@ -21,6 +22,21 @@ public final class Model {
 
     public static @NotNull ModelBuilder builder() {
         return new ModelBuilder();
+    }
+
+    /**
+     * Iterates over all paths that are valid.
+     *
+     * @param consumer the consumer to apply to each valid path and its associated rules
+     */
+    public void forEachValidPaths(BiConsumer<String, Iterable<Rule>> consumer) {
+        for (Map.Entry<String, Iterable<Rule>> entry : rules.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+
+            consumer.accept(entry.getKey(), entry.getValue());
+        }
     }
 
     @Unmodifiable

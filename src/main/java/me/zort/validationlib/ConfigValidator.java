@@ -7,8 +7,6 @@ import me.zort.validationlib.rule.Rule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 /**
  * A simple utility class for validating configuration sections against a set of defined rules.
  *
@@ -34,16 +32,11 @@ public final class ConfigValidator {
     public void validate(ConfigurationSection config, Model model) {
         ValidationContext context = new ValidationContext(this::validateRuleInternal);
 
-        for (Map.Entry<String, Iterable<Rule>> pathEntry : model.getRules().entrySet()) {
-            Iterable<Rule> rulesForPath = pathEntry.getValue();
-            if (rulesForPath == null) {
-                continue;
+        model.forEachValidPaths((path, rules) -> {
+            for (Rule rule : rules) {
+                validateStepInternal(new Step(config, path, rule), context);
             }
-
-            for (Rule rule : rulesForPath) {
-                validateStepInternal(new Step(config, pathEntry.getKey(), rule), context);
-            }
-        }
+        });
     }
 
     private boolean validateStepInternal(Step step, ValidationContext context) {
