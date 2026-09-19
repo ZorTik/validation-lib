@@ -92,11 +92,12 @@ public final class ModelBuilder {
      * @param path the path to add
      * @param model the model containing the rules to apply to the path
      * @return this {@link ModelBuilder} instance
-     * @throws NullPointerException if the path is null
+     * @throws NullPointerException if the path or model is null
      * @throws IllegalArgumentException if the path is empty, starts or ends with a dot, or contains consecutive dots
      */
     public ModelBuilder path(String path, Model model) {
         validatePath(path);
+        Objects.requireNonNull(model, "Model cannot be null");
 
         model.getRules().forEach((subPath, rules) -> {
             String combinedPath = path + "." + subPath;

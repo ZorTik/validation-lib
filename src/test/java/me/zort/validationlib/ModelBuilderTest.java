@@ -77,4 +77,89 @@ class ModelBuilderTest {
         Map<String, Iterable<Rule>> rules = model.getRules();
         assertThrows(UnsupportedOperationException.class, () -> rules.put("new.path", List.of()));
     }
+
+    @Test
+    @DisplayName("Should correctly prefix sub-model paths when embedding model")
+    void shouldEmbedSubModelPathsWithPrefix() {
+        Model subModel = Model.builder()
+                .path("host", Rule.required(), Rule.string())
+                .path("port", Rule.required(), Rule.integer())
+                .build();
+
+        Model parentModel = Model.builder()
+                .path("database", subModel)
+                .build();
+
+        Map<String, Iterable<Rule>> rules = parentModel.getRules();
+        assertEquals(2, rules.size());
+        assertTrue(rules.containsKey("database.host"));
+        assertTrue(rules.containsKey("database.port"));
+
+        List<Rule> hostRules = (List<Rule>) rules.get("database.host");
+        assertEquals(2, hostRules.size());
+
+        List<Rule> portRules = (List<Rule>) rules.get("database.port");
+        assertEquals(2, portRules.size());
+    }
+
+    @Test
+    @DisplayName("Should merge rules when embedding sub-model into path with existing rules")
+    void shouldMergeRulesWhenEmbeddingSubModelOnExistingPath() {
+        Model subModel = Model.builder()
+                .path("host", Rule.required())
+                .build();
+
+        Model parentModel = Model.builder()
+                .path("database.host", Rule.string())
+                .path("database", subModel)
+                .build();
+
+        Map<String, Iterable<Rule>> rules = parentModel.getRules();
+        assertEquals(1, rules.size());
+        assertTrue(rules.containsKey("database.host"));
+
+        List<Rule> hostRules = (List<Rule>) rules.get("database.host");
+        assertEquals(2, hostRules.size());
+    }
+
+    @Test
+    @DisplayName("Should handle multi-level nested models")
+    void shouldHandleMultiLevelNestedModels() {
+        Model poolModel = Model.builder()
+                .path("size", Rule.integer())
+                .build();
+
+        Model dbModel = Model.builder()
+                .path("pool", poolModel)
+                .build();
+
+        Model appModel = Model.builder()
+                .path("app.database", dbModel)
+                .build();
+
+        Map<String, Iterable<Rule>> rules = appModel.getRules();
+        assertEquals(1, rules.size());
+        assertTrue(rules.containsKey("app.database.pool.size"));
+    }
+
+    @Test
+    @DisplayName("Should throw NullPointerException when embedded model is null")
+    void shouldThrowNpeWhenSubModelIsNull() {
+        ModelBuilder builder = Model.builder();
+        assertThrows(NullPointerException.class, () -> builder.path("database", (Model) null));
+    }
+
+    @Test
+    @DisplayName("Should throw IllegalArgumentException when embedding sub-model with invalid parent path")
+    void shouldThrowIllegalArgumentExceptionForInvalidParentPath() {
+        Model subModel = Model.builder()
+                .path("host", Rule.required())
+                .build();
+        ModelBuilder builder = Model.builder();
+
+        assertThrows(IllegalArgumentException.class, () -> builder.path("", subModel));
+        assertThrows(IllegalArgumentException.class, () -> builder.path("db.", subModel));
+        assertThrows(IllegalArgumentException.class, () -> builder.path(".db", subModel));
+        assertThrows(IllegalArgumentException.class, () -> builder.path("db..host", subModel));
+    }
 }
