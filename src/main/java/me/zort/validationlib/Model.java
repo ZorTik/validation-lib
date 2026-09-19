@@ -43,4 +43,18 @@ public final class Model {
     public Map<String, Iterable<Rule>> getRules() {
         return rules;
     }
+
+    @NotNull
+    public Model extend(Model other) {
+        ModelBuilder builder = toModelBuilder();
+        builder.importPaths(other);
+        return builder.build();
+    }
+
+    @NotNull
+    public ModelBuilder toModelBuilder() {
+        ModelBuilder builder = new ModelBuilder();
+        builder.importPaths(this);
+        return builder;
+    }
 }

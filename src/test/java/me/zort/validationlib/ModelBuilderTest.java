@@ -162,4 +162,107 @@ class ModelBuilderTest {
         assertThrows(IllegalArgumentException.class, () -> builder.path(".db", subModel));
         assertThrows(IllegalArgumentException.class, () -> builder.path("db..host", subModel));
     }
+
+    @Test
+    @DisplayName("Should convert Model to ModelBuilder preserving all paths and rules")
+    void shouldConvertToModelBuilderPreservingPathsAndRules() {
+        Model original = Model.builder()
+                .path("app.name", Rule.required(), Rule.string())
+                .path("app.version", Rule.required(), Rule.integer())
+                .build();
+
+        Model copy = original.toModelBuilder().build();
+
+        Map<String, Iterable<Rule>> originalRules = original.getRules();
+        Map<String, Iterable<Rule>> copyRules = copy.getRules();
+
+        assertEquals(originalRules.keySet(), copyRules.keySet());
+        assertEquals(2, ((List<Rule>) copyRules.get("app.name")).size());
+        assertEquals(2, ((List<Rule>) copyRules.get("app.version")).size());
+    }
+
+    @Test
+    @DisplayName("Should allow modifying builder created from toModelBuilder without affecting original Model")
+    void shouldAllowModifyingConvertedModelBuilderIndependently() {
+        Model original = Model.builder()
+                .path("database.host", Rule.required())
+                .build();
+
+        Model modified = original.toModelBuilder()
+                .path("database.host", Rule.string())
+                .path("database.port", Rule.integer())
+                .build();
+
+        assertEquals(1, original.getRules().size());
+        assertEquals(1, ((List<Rule>) original.getRules().get("database.host")).size());
+
+        assertEquals(2, modified.getRules().size());
+        assertEquals(2, ((List<Rule>) modified.getRules().get("database.host")).size());
+        assertTrue(modified.getRules().containsKey("database.port"));
+    }
+
+    @Test
+    @DisplayName("Should extend existing model with another model containing distinct paths")
+    void shouldExtendModelWithDistinctPaths() {
+        Model baseModel = Model.builder()
+                .path("app.name", Rule.required())
+                .build();
+
+        Model extensionModel = Model.builder()
+                .path("app.version", Rule.integer())
+                .build();
+
+        Model combined = baseModel.extend(extensionModel);
+
+        assertEquals(2, combined.getRules().size());
+        assertTrue(combined.getRules().containsKey("app.name"));
+        assertTrue(combined.getRules().containsKey("app.version"));
+
+        assertEquals(1, baseModel.getRules().size());
+        assertEquals(1, extensionModel.getRules().size());
+    }
+
+    @Test
+    @DisplayName("Should merge rules for overlapping paths when extending model")
+    void shouldMergeRulesWhenExtendingModelWithOverlappingPaths() {
+        Model baseModel = Model.builder()
+                .path("server.port", Rule.required())
+                .build();
+
+        Model extensionModel = Model.builder()
+                .path("server.port", Rule.integer())
+                .path("server.host", Rule.string())
+                .build();
+
+        Model combined = baseModel.extend(extensionModel);
+
+        assertEquals(2, combined.getRules().size());
+        List<Rule> portRules = (List<Rule>) combined.getRules().get("server.port");
+        assertEquals(2, portRules.size());
+    }
+
+    @Test
+    @DisplayName("Should handle extending with empty model")
+    void shouldHandleExtendingWithEmptyModel() {
+        Model baseModel = Model.builder()
+                .path("app.name", Rule.required())
+                .build();
+
+        Model emptyModel = Model.builder().build();
+
+        Model result = baseModel.extend(emptyModel);
+        assertEquals(1, result.getRules().size());
+        assertTrue(result.getRules().containsKey("app.name"));
+    }
+
+    @Test
+    @DisplayName("Should throw NullPointerException when extending with null model")
+    void shouldThrowNpeWhenExtendingWithNullModel() {
+        Model baseModel = Model.builder()
+                .path("app.name", Rule.required())
+                .build();
+
+        assertThrows(NullPointerException.class, () -> baseModel.extend(null));
+    }
 }
+

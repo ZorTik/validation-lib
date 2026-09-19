@@ -1,6 +1,7 @@
 package me.zort.validationlib;
 
 import me.zort.validationlib.rule.Rule;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -96,13 +97,29 @@ public final class ModelBuilder {
      * @throws IllegalArgumentException if the path is empty, starts or ends with a dot, or contains consecutive dots
      */
     public ModelBuilder path(String path, Model model) {
-        validatePath(path);
         Objects.requireNonNull(model, "Model cannot be null");
 
-        model.getRules().forEach((subPath, rules) -> {
-            String combinedPath = path + "." + subPath;
+        importPaths(model, path);
+        return this;
+    }
 
-            ModelPathBuilder pathBuilder = path(combinedPath);
+    public ModelBuilder importPaths(Model model) {
+        return importPaths(model, null);
+    }
+
+    public ModelBuilder importPaths(Model model, @Nullable String prefix) {
+        Objects.requireNonNull(model, "Model cannot be null");
+
+        if (prefix != null) {
+            validatePath(prefix);
+        }
+
+        model.getRules().forEach((path, rules) -> {
+            if (prefix != null) {
+                path = prefix + "." + path;
+            }
+
+            ModelPathBuilder pathBuilder = path(path);
             for (Rule rule : rules) {
                 pathBuilder.rule(rule);
             }
