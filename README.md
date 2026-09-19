@@ -26,12 +26,6 @@ public class Examples {
         }
         
         // We are safe to load
-        if (config.getBoolean("redis.enabled")) {
-            String host = config.getString("redis.host");
-            int port = config.getInt("redis.port", 6379);
-            String user = config.getString("redis.user", "default");
-            String password = config.getString("redis.password", null);
-        }
     }
 
     private static Rule onlyIfRedisEnabled(Rule... rules) {
