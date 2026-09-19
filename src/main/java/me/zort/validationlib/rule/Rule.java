@@ -31,7 +31,7 @@ public interface Rule {
      *
      * @return an iterable of rules
      */
-    default Iterable<Rule> getRules() {
+    default Iterable<? extends Rule> getRules() {
         return Collections.emptyList();
     }
 
