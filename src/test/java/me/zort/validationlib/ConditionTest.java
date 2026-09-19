@@ -21,7 +21,7 @@ class ConditionTest {
         MemoryConfiguration config = new MemoryConfiguration();
         config.set("foo", "bar");
         step = new Step(config, "foo", Rule.string());
-        context = new ValidationContext((rule, s, ctx) -> true);
+        context = new ValidationContext((s, ctx) -> true);
     }
 
     @Test
