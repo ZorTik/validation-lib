@@ -17,7 +17,9 @@ public class TargetRule implements Rule {
     public @Nullable String validate(Step step, ValidationContext context) {
         try {
             for (Rule rule : rules) {
-                context.validate(rule, new Step(step.getConfig(), path, rule), context);
+                if (!context.validate(rule, new Step(step.getConfig(), path, rule), context)) {
+                    return String.format("Target %s condition failed", path);
+                }
             }
         } catch (RuleValidationException e) {
             return String.format("Target %s failed rule: %s", path, e.getMessage());
