@@ -1,5 +1,6 @@
 package me.zort.validationlib.rule;
 
+import me.zort.validationlib.Model;
 import me.zort.validationlib.Step;
 import me.zort.validationlib.ValidationContext;
 import me.zort.validationlib.condition.Condition;
@@ -75,6 +76,14 @@ public interface Rule {
 
     static Rule section() {
         return SectionRule.getInstance();
+    }
+
+    static Rule element(Model model) {
+        return new ContentModelRule(model);
+    }
+
+    static Rule element(Rule... rules) {
+        return new ContentModelRule(List.of(rules));
     }
 
     static Rule number() {
