@@ -17,7 +17,7 @@ public class TargetRule implements Rule {
     public @Nullable String validate(Step step, ValidationContext context) {
         try {
             for (Rule rule : rules) {
-                if (!context.validate(rule, new Step(step.getConfig(), path, rule), context)) {
+                if (!context.validate(step.withDifferentPathRule(path, rule))) {
                     return String.format("Target %s condition failed", path);
                 }
             }

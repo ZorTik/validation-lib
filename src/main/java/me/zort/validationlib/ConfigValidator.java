@@ -30,7 +30,7 @@ public final class ConfigValidator {
      * @throws InvalidConfigurationException if the configuration is invalid according to the rules.
      */
     public void validate(ConfigurationSection config, Model model) {
-        ValidationContext context = new ValidationContext(this::validateRuleInternal);
+        ValidationContext context = new ValidationContext(this::validateStepInternal);
 
         model.forEachValidPaths((path, rules) -> {
             for (Rule rule : rules) {
@@ -41,15 +41,6 @@ public final class ConfigValidator {
 
     private boolean validateStepInternal(Step step, ValidationContext context) {
         Rule rule = step.getRule();
-
-        boolean passed = validateRuleInternal(rule, step, context);
-        if (passed) {
-            context.addPassedRule(rule);
-        }
-        return passed;
-    }
-
-    private boolean validateRuleInternal(Rule rule, Step step, ValidationContext context) {
         for (Condition condition : rule.getConditions()) {
             if (!condition.passes(step, context)) {
                 return false;

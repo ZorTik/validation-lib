@@ -17,7 +17,7 @@ public class PassesRuleCondition implements Condition {
     @Override
     public boolean passes(Step step, ValidationContext context) {
         try {
-            return context.validate(rule, step, context);
+            return context.validate(step.withDifferentRule(rule));
         } catch (RuleValidationException e) {
             return false;
         }
