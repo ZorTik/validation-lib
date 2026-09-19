@@ -10,10 +10,10 @@ public class Examples {
     public static void loadConfig(ConfigurationSection config) {
         Model model = Model.builder()
                 .path("redis.enabled", Rule.required(), Rule.bool())
-                .path("redis.host", onlyIfRedisEnabled(Rule.required(), Rule.string()))
-                .path("redis.port", onlyIfRedisEnabled(Rule.integer(), Rule.min(1), Rule.max(65535)))
-                .path("redis.user", onlyIfRedisEnabled(Rule.string()))
-                .path("redis.password", onlyIfRedisEnabled(Rule.string()))
+                .path("redis.host", ifRedisEnabled(Rule.required(), Rule.string()))
+                .path("redis.port", ifRedisEnabled(Rule.integer(), Rule.min(1), Rule.max(65535)))
+                .path("redis.user", ifRedisEnabled(Rule.string()))
+                .path("redis.password", ifRedisEnabled(Rule.string()))
                 .build();
 
         ConfigValidator validator = ConfigValidator.create();
@@ -28,7 +28,7 @@ public class Examples {
         // We are safe to load
     }
 
-    private static Rule onlyIfRedisEnabled(Rule... rules) {
+    private static Rule ifRedisEnabled(Rule... rules) {
         return Rule
                 .onlyIf(
                         Rule.target("redis.enabled", Rule.isEqual(true))
