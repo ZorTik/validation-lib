@@ -1,8 +1,8 @@
-# SimpleValidationLib
+# validation-lib
 
-In other words, if there is nothing simple enough.
+So, there was nothing simple enough for validation of Bukkit configuration.
 
-Enjoy :)
+Therefore, enjoy :)
 
 ```java
 public class Examples {
